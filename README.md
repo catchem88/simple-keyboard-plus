@@ -42,7 +42,6 @@ Configured for a clean typing experience out of the box. All of these are still 
 | Sound on keypress | varies by screen size | **off** |
 | Popup on keypress | varies by screen size | **on** |
 | Fullscreen keyboard in landscape | on | **off** |
-| Enabled language | matched to system locale | **English (US) only** |
 
 Sound and popup previously differed between phones and tablets. They are now the same on every device.
 
