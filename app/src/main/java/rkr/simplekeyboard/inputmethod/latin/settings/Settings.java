@@ -64,6 +64,8 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_SHOW_NUMBER_ROW = "pref_show_number_row";
     public static final String PREF_SPACE_SWIPE = "pref_space_swipe";
     public static final String PREF_DELETE_SWIPE = "pref_delete_swipe";
+    public static final String PREF_AUTO_TEXT = "pref_auto_text";
+    public static final String PREF_FULLSCREEN_LANDSCAPE = "pref_fullscreen_landscape";
 
     private static final float UNDEFINED_PREFERENCE_VALUE_FLOAT = -1.0f;
     private static final int UNDEFINED_PREFERENCE_VALUE_INT = -1;
@@ -224,7 +226,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     }
 
     public static boolean readShowLanguageSwitchKey(final SharedPreferences prefs) {
-        return prefs.getBoolean(PREF_SHOW_LANGUAGE_SWITCH_KEY, true);
+        return prefs.getBoolean(PREF_SHOW_LANGUAGE_SWITCH_KEY, false);
     }
 
     public static boolean readUseOnScreenKeyboard(final SharedPreferences prefs) {
@@ -240,15 +242,23 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     }
 
     public static boolean readShowNumberRow(final SharedPreferences prefs) {
-        return prefs.getBoolean(PREF_SHOW_NUMBER_ROW, false);
+        return prefs.getBoolean(PREF_SHOW_NUMBER_ROW, true);
     }
 
     public static boolean readSpaceSwipeEnabled(final SharedPreferences prefs) {
-        return prefs.getBoolean(PREF_SPACE_SWIPE, false);
+        return prefs.getBoolean(PREF_SPACE_SWIPE, true);
     }
 
     public static boolean readDeleteSwipeEnabled(final SharedPreferences prefs) {
         return prefs.getBoolean(PREF_DELETE_SWIPE, false);
+    }
+
+    public static AutoText readAutoText(final SharedPreferences prefs) {
+        return AutoText.parse(prefs.getString(PREF_AUTO_TEXT, null));
+    }
+
+    public static void writeAutoText(final SharedPreferences prefs, final AutoText autoText) {
+        prefs.edit().putString(PREF_AUTO_TEXT, autoText.serialize()).apply();
     }
 
     public static String readPrefSubtypes(final SharedPreferences prefs) {
@@ -312,8 +322,18 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
         return KeyboardTheme.getKeyboardTheme(context);
     }
 
+    /*
+        Read the custom keyboard colour, falling back to the colour of the current theme.
+
+        The default is resolved lazily on purpose. Passing readKeyboardDefaultColor as the default
+        argument would evaluate it on every call, and that reads two resource int arrays and the
+        theme, which is wasteful because this runs on every keyboard swap.
+    */
     public static int readKeyboardColor(final SharedPreferences prefs, final Context context) {
-        return prefs.getInt(PREF_KEYBOARD_COLOR, readKeyboardDefaultColor(context));
+        if(prefs.contains(PREF_KEYBOARD_COLOR)) {
+            return prefs.getInt(PREF_KEYBOARD_COLOR, Color.TRANSPARENT);
+        }
+        return readKeyboardDefaultColor(context);
     }
 
     public static void removeKeyboardColor(final SharedPreferences prefs) {
@@ -322,6 +342,14 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
 
     public static boolean readUseFullscreenMode(final Resources res) {
         return res.getBoolean(R.bool.config_use_fullscreen_mode);
+    }
+
+    /*
+        Whether the user allows the extracted fullscreen text field. config_use_fullscreen_mode is
+        only true for phones in landscape, so this effectively controls landscape behaviour.
+    */
+    public static boolean readFullscreenLandscape(final SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_FULLSCREEN_LANDSCAPE, false);
     }
 
     public static boolean readHasHardwareKeyboard(final Configuration conf) {

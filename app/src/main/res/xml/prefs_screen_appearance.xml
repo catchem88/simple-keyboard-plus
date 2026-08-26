@@ -23,6 +23,12 @@
         android:fragment="rkr.simplekeyboard.inputmethod.latin.settings.ThemeSettingsFragment"
         android:key="screen_theme"
         android:title="@string/settings_screen_theme" />
+    <SwitchPreference
+        android:key="pref_fullscreen_landscape"
+        android:title="@string/fullscreen_landscape"
+        android:summary="@string/fullscreen_landscape_summary"
+        android:defaultValue="false"
+        android:persistent="true" />
     <rkr.simplekeyboard.inputmethod.latin.settings.ColorDialogPreference
         android:key="pref_keyboard_color"
         android:title="@string/keyboard_color" />

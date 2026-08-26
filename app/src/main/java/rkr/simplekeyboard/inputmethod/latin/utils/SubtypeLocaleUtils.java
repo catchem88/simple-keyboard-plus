@@ -28,13 +28,10 @@ import android.content.res.Resources;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.Subtype;
-import rkr.simplekeyboard.inputmethod.latin.common.LocaleUtils;
 
 /**
  * Utility methods for building subtypes for the supported locales.
@@ -294,36 +291,16 @@ public final class SubtypeLocaleUtils {
         return subtypes.size() == 0 ? null : subtypes.get(0);
     }
 
-    /**
-     * Get the list subtypes corresponding to the system's languages.
-     * @param resources the resources to use.
-     * @return the default list of subtypes based on the system's languages.
-     */
+    /*
+        Get the subtypes that are enabled before the user has chosen any.
+
+        Upstream derives this from the system languages. This fork ships English (US) only, so a
+        fresh install always starts from one known layout instead of whatever the device locale
+        happens to be. Additional languages are added by the user under Settings > Languages.
+    */
     public static List<Subtype> getDefaultSubtypes(final Resources resources) {
-        final ArrayList<Locale> supportedLocales = new ArrayList<>(sSupportedLocales.length);
-        for (final String localeString : sSupportedLocales) {
-            supportedLocales.add(LocaleUtils.constructLocaleFromString(localeString));
-        }
-
-        final List<Locale> systemLocales = LocaleUtils.getSystemLocales();
-
         final ArrayList<Subtype> subtypes = new ArrayList<>();
-        final HashSet<Locale> addedLocales = new HashSet<>();
-        for (final Locale systemLocale : systemLocales) {
-            final Locale bestLocale = LocaleUtils.findBestLocale(systemLocale, supportedLocales);
-            if (bestLocale != null && !addedLocales.contains(bestLocale)) {
-                addedLocales.add(bestLocale);
-                final String bestLocaleString = LocaleUtils.getLocaleString(bestLocale);
-                final Subtype bestSubtype = getDefaultSubtype(bestLocaleString, resources);
-                if (bestSubtype != null) {
-                    subtypes.add(bestSubtype);
-                }
-            }
-        }
-        if (subtypes.size() == 0) {
-            // there needs to be at least one default subtype
-            subtypes.add(getSubtypes(LOCALE_ENGLISH_UNITED_STATES, resources).get(0));
-        }
+        subtypes.add(getSubtypes(LOCALE_ENGLISH_UNITED_STATES,resources).get(0));
         return subtypes;
     }
 

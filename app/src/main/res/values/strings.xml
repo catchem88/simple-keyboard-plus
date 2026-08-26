@@ -35,6 +35,10 @@
     <string name="settings_screen_appearance">Appearance</string>
     <!-- Settings screen title for keyboard theme settings [CHAR LIMIT=33] -->
     <string name="settings_screen_theme">Theme</string>
+    <!-- Settings screen title for auto-text, the feature that replaces a typed keyword with a longer text [CHAR LIMIT=33] -->
+    <string name="settings_screen_auto_text">Auto-text</string>
+    <!-- Summary of the auto-text settings screen -->
+    <string name="settings_screen_auto_text_summary">Replace a keyword with a longer text while typing</string>
 
     <!-- Units abbreviation for the duration (milliseconds) [CHAR LIMIT=10] -->
     <string name="abbreviation_unit_milliseconds"><xliff:g id="MILLISECONDS">%s</xliff:g>ms</string>
@@ -119,6 +123,10 @@
     <string name="show_number_row">Show separate number row</string>
     <string name="space_swipe">Space swipe cursor move</string>
     <string name="delete_swipe">Delete swipe</string>
+    <!-- Option to allow the extracted full screen text field that replaces the app in landscape -->
+    <string name="fullscreen_landscape">Fullscreen keyboard in landscape</string>
+    <!-- Description for the landscape fullscreen option -->
+    <string name="fullscreen_landscape_summary">Hide the app behind an enlarged text field when typing in landscape</string>
     <string name="setup_message">Simple Keyboard is not enabled. Click OK to open Languages &amp; Input settings. You will need to select Simple Keyboard in your current keyboard to use it.</string>
     <string name="user_languages">Enabled keyboard languages</string>
     <string name="add_language">Add language</string>
@@ -127,4 +135,19 @@
     <string name="change_keyboard">Change keyboard</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="license">License</string>
+
+    <!-- Title of the action and dialog to add an auto-text entry [CHAR LIMIT=25] -->
+    <string name="auto_text_add">Add auto-text</string>
+    <!-- Title of the dialog to change or remove an existing auto-text entry [CHAR LIMIT=25] -->
+    <string name="auto_text_edit">Edit auto-text</string>
+    <!-- Label of the field holding the text that is typed to trigger a replacement [CHAR LIMIT=25] -->
+    <string name="auto_text_keyword">Keyword</string>
+    <!-- Label of the field holding the text the keyword is replaced with [CHAR LIMIT=25] -->
+    <string name="auto_text_expansion">Expanded text</string>
+    <!-- Shown in place of the list when no auto-text entries have been added [CHAR LIMIT=33] -->
+    <string name="auto_text_empty">No auto-text yet</string>
+    <!-- Explains how to add the first auto-text entry -->
+    <string name="auto_text_empty_summary">Use the add button to create your first keyword</string>
+    <string name="auto_text_keyword_hint" translatable="false">/lipsum</string>
+    <string name="auto_text_expansion_hint" translatable="false">Lorem ipsum dolor sit amet</string>
 </resources>

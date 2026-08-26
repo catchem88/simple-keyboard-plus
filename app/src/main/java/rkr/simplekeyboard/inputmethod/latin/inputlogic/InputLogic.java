@@ -33,6 +33,7 @@ import rkr.simplekeyboard.inputmethod.latin.LatinIME;
 import rkr.simplekeyboard.inputmethod.latin.RichInputConnection;
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
 import rkr.simplekeyboard.inputmethod.latin.common.StringUtils;
+import rkr.simplekeyboard.inputmethod.latin.settings.AutoText;
 import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
 import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
@@ -70,6 +71,13 @@ public final class InputLogic {
 
     public void clearCaches() {
         mConnection.clearCaches();
+    }
+
+    /*
+        Release resources that outlive the service, called from LatinIME.onDestroy.
+    */
+    public void onDestroy() {
+        mConnection.onDestroy();
     }
 
     /**
@@ -276,12 +284,53 @@ public final class InputLogic {
     private void handleNonSpecialCharacterEvent(final Event event,
             final InputTransaction inputTransaction) {
         final int codePoint = event.mCodePoint;
+        if(performAutoTextExpansion(inputTransaction,codePoint)) {
+            return;
+        }
         if (inputTransaction.mSettingsValues.isWordSeparator(codePoint)
                 || Character.getType(codePoint) == Character.OTHER_SYMBOL) {
             handleSeparatorEvent(event, inputTransaction);
         } else {
             handleNonSeparatorEvent(event);
         }
+    }
+
+    /*
+        Replace an auto-text keyword with its expansion when the code point about to be typed is the
+        keyword's last character. The trigger character is never sent to the editor, which keeps the
+        replacement out of the asynchronous key event path that digits use.
+
+        Returns whether the event was handled and no character should be typed.
+    */
+    private boolean performAutoTextExpansion(final InputTransaction inputTransaction,
+            final int codePoint) {
+        final AutoText autoText = inputTransaction.mSettingsValues.mAutoText;
+        if(autoText.isEmpty() || mConnection.hasSelection()) {
+            return false;
+        }
+
+        final int index = autoText.findMatch(mConnection,codePoint);
+        if(index == AutoText.NOT_A_MATCH) {
+            return false;
+        }
+
+        mConnection.beginBatchEdit();
+        //beginBatchEdit refreshes the input connection, so only now is it safe to check
+        final boolean connected = mConnection.isConnected();
+        if(connected) {
+            final int prefixLength = autoText.getPrefixLength(index);
+            if(prefixLength > 0) {
+                mConnection.deleteTextBeforeCursor(prefixLength);
+            }
+            mConnection.commitText(autoText.getExpansion(index),1);
+        }
+        mConnection.endBatchEdit();
+
+        if(!connected) {
+            return false;
+        }
+        inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
+        return true;
     }
 
     /**

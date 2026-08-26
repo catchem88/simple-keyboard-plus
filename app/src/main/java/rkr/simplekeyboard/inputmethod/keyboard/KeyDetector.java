@@ -18,6 +18,8 @@
 
 package rkr.simplekeyboard.inputmethod.keyboard;
 
+import java.util.List;
+
 /**
  * This class handles key detection.
  */
@@ -94,8 +96,12 @@ public class KeyDetector {
         final int touchX = getTouchX(x);
         final int touchY = getTouchY(y);
 
-        for (final Key key: mKeyboard.getNearestKeys(touchX, touchY)) {
-            if (key.isOnKey(touchX, touchY)) {
+        //Indexed rather than iterated because this runs on every touch move event and the list is
+        //an unmodifiable wrapper, so a for-each allocates two objects per call
+        final List<Key> nearestKeys = mKeyboard.getNearestKeys(touchX,touchY);
+        for(int index = 0; index < nearestKeys.size(); index++) {
+            final Key key = nearestKeys.get(index);
+            if(key.isOnKey(touchX,touchY)) {
                 return key;
             }
         }

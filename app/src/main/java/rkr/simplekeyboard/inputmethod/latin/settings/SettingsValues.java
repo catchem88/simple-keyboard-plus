@@ -49,6 +49,8 @@ public class SettingsValues {
     public final boolean mShowNumberRow;
     public final boolean mSpaceSwipeEnabled;
     public final boolean mDeleteSwipeEnabled;
+    public final AutoText mAutoText;
+    public final boolean mFullscreenLandscape;
 
     // From the input box
     public final InputAttributes mInputAttributes;
@@ -91,6 +93,8 @@ public class SettingsValues {
         mShowNumberRow = Settings.readShowNumberRow(prefs);
         mSpaceSwipeEnabled = Settings.readSpaceSwipeEnabled(prefs);
         mDeleteSwipeEnabled = Settings.readDeleteSwipeEnabled(prefs);
+        mAutoText = Settings.readAutoText(prefs);
+        mFullscreenLandscape = Settings.readFullscreenLandscape(prefs);
     }
 
     public boolean isWordSeparator(final int code) {

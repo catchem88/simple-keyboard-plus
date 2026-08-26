@@ -91,6 +91,15 @@ public final class RichInputConnection {
         return mIC != null;
     }
 
+    /*
+        Stop the background executor. Its thread is non daemon, so without this it keeps running
+        after the service is destroyed and holds this connection, and through it the whole service,
+        reachable.
+    */
+    public void onDestroy() {
+        mBackgroundThread.shutdown();
+    }
+
     public void beginBatchEdit() {
         if (++mNestLevel == 1) {
             mIC = mLatinIME.getCurrentInputConnection();
@@ -227,6 +236,28 @@ public final class RichInputConnection {
         });
     }
 
+    /*
+        Append to the cached text before the cursor, keeping it bounded.
+
+        Without a cap this string grows for the whole session, and because every append copies it,
+        the cost of a single key press grows with everything typed before it. Trimming from the front
+        is safe because every reader works backwards from the end, and reloadTextCache would produce
+        the same EDITOR_CONTENTS_CACHE_SIZE window anyway.
+
+        The trim only kicks in past twice the cache size so that it is amortised instead of copying
+        on every key press.
+    */
+    private void appendTextBeforeCursor(final CharSequence text) {
+        final String appended = mTextBeforeCursor + text;
+        if(appended.length() > 2 * Constants.EDITOR_CONTENTS_CACHE_SIZE) {
+            mTextBeforeCursor =
+                    appended.substring(appended.length() - Constants.EDITOR_CONTENTS_CACHE_SIZE);
+        }
+        else {
+            mTextBeforeCursor = appended;
+        }
+    }
+
     public void clearCaches() {
         Log.i(TAG, "Clearing text caches.");
         mExpectedSelStart = INVALID_CURSOR_POSITION;
@@ -244,7 +275,7 @@ public final class RichInputConnection {
      */
     public void commitText(final CharSequence text, final int newCursorPosition) {
         RichInputMethodManager.getInstance().resetSubtypeCycleOrder();
-        mTextBeforeCursor += text;
+        appendTextBeforeCursor(text);
         // TODO: the following is exceedingly error-prone. Right now when the cursor is in the
         // middle of the composing word mComposingText only holds the part of the composing text
         // that is before the cursor, so this actually works, but it's terribly confusing. Fix this.
@@ -296,6 +327,15 @@ public final class RichInputConnection {
         final int length = mTextBeforeCursor.length();
         if (length < 1) return Constants.NOT_A_CODE;
         return Character.codePointBefore(mTextBeforeCursor, length);
+    }
+
+    /*
+        Whether the first length characters of text match the text immediately before the cursor.
+        This only reads the cache, so it never blocks, initiates IPC or allocates.
+    */
+    public boolean textBeforeCursorEndsWith(final String text,final int length) {
+        final int offset = mTextBeforeCursor.length() - length;
+        return offset >= 0 && mTextBeforeCursor.regionMatches(offset,text,0,length);
     }
 
     public void replaceText(final int startPosition, final int endPosition, CharSequence text) {
@@ -390,7 +430,7 @@ public final class RichInputConnection {
             // mistakenly catch them to do some stuff.
             switch (keyEvent.getKeyCode()) {
             case KeyEvent.KEYCODE_ENTER:
-                mTextBeforeCursor += "\n";
+                appendTextBeforeCursor("\n");
                 if (hasCursorPosition()) {
                     mExpectedSelStart += 1;
                     mExpectedSelEnd = mExpectedSelStart;
@@ -398,7 +438,7 @@ public final class RichInputConnection {
                 break;
             case KeyEvent.KEYCODE_UNKNOWN:
                 if (null != keyEvent.getCharacters()) {
-                    mTextBeforeCursor += keyEvent.getCharacters();
+                    appendTextBeforeCursor(keyEvent.getCharacters());
                     if (hasCursorPosition()) {
                         mExpectedSelStart += keyEvent.getCharacters().length();
                         mExpectedSelEnd = mExpectedSelStart;
@@ -409,7 +449,7 @@ public final class RichInputConnection {
                 break;
             default:
                 final String text = StringUtils.newSingleCodePointString(keyEvent.getUnicodeChar());
-                mTextBeforeCursor += text;
+                appendTextBeforeCursor(text);
                 if (hasCursorPosition()) {
                     mExpectedSelStart += text.length();
                     mExpectedSelEnd = mExpectedSelStart;

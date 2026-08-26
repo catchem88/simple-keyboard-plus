@@ -1,18 +1,45 @@
 apply plugin: 'com.android.application'
 
+/*
+    Release signing credentials are kept out of version control in keystore.properties. When that
+    file is absent the release build is still produced, just unsigned, so the project keeps building
+    for anyone who does not have the key.
+*/
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+def hasSigningConfig = keystorePropertiesFile.exists()
+if(hasSigningConfig) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     defaultConfig {
-        applicationId "rkr.simplekeyboard.inputmethod"
+        //Distinct from upstream's rkr.simplekeyboard.inputmethod so both can be installed at once.
+        //The namespace below stays unchanged, so the Java packages and the R class are untouched.
+        applicationId "rkr.simplekeyboard.inputmethod.plus"
         compileSdk 37
         minSdkVersion 24
         targetSdkVersion 37
         versionCode 147
         versionName "6.6"
     }
+    signingConfigs {
+        release {
+            if(hasSigningConfig) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if(hasSigningConfig) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     namespace 'rkr.simplekeyboard.inputmethod'

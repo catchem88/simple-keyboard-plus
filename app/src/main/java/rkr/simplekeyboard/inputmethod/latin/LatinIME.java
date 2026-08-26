@@ -283,6 +283,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public void onDestroy() {
         mSettings.onDestroy();
         unregisterReceiver(mRingerModeChangeReceiver);
+        //The connection owns a worker thread that would otherwise outlive the service and keep it
+        //reachable
+        mInputLogic.onDestroy();
         super.onDestroy();
     }
 
@@ -576,6 +579,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public boolean onEvaluateFullscreenMode() {
         if (isImeSuppressedByHardwareKeyboard()) {
             // If there is a hardware keyboard, disable full screen mode.
+            return false;
+        }
+        //The framework can call this before the settings have been loaded, so tolerate a null
+        //snapshot and fall back to the resource driven behaviour
+        final SettingsValues settingsValues = mSettings.getCurrent();
+        if(settingsValues != null && !settingsValues.mFullscreenLandscape) {
             return false;
         }
         // Reread resource value here, because this method is called by the framework as needed.
