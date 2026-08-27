@@ -27,6 +27,10 @@ enabled alongside the original Simple Keyboard.
 - **Fullscreen keyboard in landscape can be turned off** - the original always hides the app behind an
   enlarged text field in landscape. **Settings > Appearance > Fullscreen keyboard in landscape** now
   lets you keep the app visible. Off by default in this fork.
+- **The app icon can be hidden** - a keyboard does not really need a launcher entry. Turn off
+  **Settings > Preferences > Show app icon** to remove it from the app drawer. Shown by default so a new
+  install is still easy to find. With the icon hidden, settings remain reachable by long-pressing the
+  comma key, or through system Settings > Languages & input.
 
 ### Changed defaults
 
@@ -85,6 +89,9 @@ Download the APK from this repository, install it, then:
 3. Switch to it from your current keyboard, usually by long-pressing space.
 4. To change settings, long-press `,` on the keyboard or open Settings > Languages & Input >
    Simple Keyboard Plus.
+
+Once set up you can hide the launcher icon under Settings > Preferences > Show app icon. Long-pressing
+`,` still opens settings afterwards.
 
 ### Building from source
 

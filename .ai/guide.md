@@ -141,7 +141,9 @@ compatibility.
   - `pref_key_longpress_timeout`, `pref_bottom_offset_portrait`, `pref_keyboard_color` - ints
   - `pref_enabled_subtypes` - the enabled layouts serialised into one string
   - `pref_auto_text` - the whole auto-text table serialised into one string
-  - `pref_fullscreen_landscape` - boolean, default true, allows the extracted fullscreen text field
+    - `pref_fullscreen_landscape` - boolean, default false, allows the extracted fullscreen text field
+  - `pref_show_app_icon` - boolean, default true. Mirrors the launcher alias state, which actually
+    lives in the package manager, not here
   - `theme_key` (`KeyboardTheme.KEYBOARD_THEME_KEY`) - selected theme id
   - `active_restrictions` - string set of keys currently locked by managed configuration
 - `res/xml/app_restrictions.xml` - managed-configuration schema. `Settings.loadRestrictions` copies
@@ -170,6 +172,11 @@ compatibility.
   - `app/src/main/java/rkr/simplekeyboard/inputmethod/latin/settings/Settings.java` - `PREF_FULLSCREEN_LANDSCAPE`, `readFullscreenLandscape`
   - `app/src/main/res/xml/prefs_screen_appearance.xml` - the switch, defaults to on so existing behaviour is unchanged
   - `app/src/main/res/values-land/config.xml` - `config_use_fullscreen_mode` is only true here, which is why the preference is framed as landscape only
+- `Hideable launcher icon` - lets the app be removed from the app drawer, since a keyboard does not need a launcher entry
+  - `app/src/main/AndroidManifest.xml` - `SettingsActivity` has no intent filter but stays exported for the system; a separate `activity-alias` named `SettingsLauncherAlias` carries MAIN/LAUNCHER and is what gets toggled
+  - `app/src/main/java/rkr/simplekeyboard/inputmethod/latin/utils/ApplicationUtils.java` - `setLauncherIconVisible`, idempotent, uses `DONT_KILL_APP`
+  - `app/src/main/java/rkr/simplekeyboard/inputmethod/latin/settings/PreferencesSettingsFragment.java` - applies the toggle and reconciles on screen open
+  - `app/src/main/res/xml/prefs_screen_preferences.xml` - the `pref_show_app_icon` switch
 - `Keyboard rendering and layouts` - drawing keys and building layouts from XML
   - `app/src/main/java/rkr/simplekeyboard/inputmethod/keyboard/MainKeyboardView.java` - the visible keyboard, key previews, more-keys panels
   - `app/src/main/java/rkr/simplekeyboard/inputmethod/keyboard/KeyboardView.java` - base drawing
@@ -260,6 +267,14 @@ compatibility.
 - **Release builds rename `res/` file paths** via resource shrinking, so
   `aapt2 dump xmltree --file res/xml/foo.xml` fails against a release APK. Inspect the debug APK for
   resource-level checks.
+- **`aapt2 dump badging` does not report an `activity-alias` under `launchable-activity`.** After the
+  launcher entry moved to an alias, badging shows no launchable activity at all. That is an aapt2
+  reporting limitation, not a broken manifest - launchers resolve MAIN/LAUNCHER through
+  `PackageManager.queryIntentActivities`, which does include aliases. Verify the alias with
+  `aapt2 dump xmltree --file AndroidManifest.xml` instead.
+- **Never point `setComponentEnabledSetting` at `SettingsActivity`.** The system launches it by
+  component name for the IME settings entry, so disabling it would break that. Only the alias may be
+  toggled, and always with `DONT_KILL_APP` or the process dies mid-typing.
 - **`Resources.getIdentifier`'s package argument is the applicationId, not the R class package.**
   Since `applicationId` and `namespace` now differ, deriving it from `R.class.getPackage().getName()`
   returns the wrong package and every lookup silently returns 0. Always use

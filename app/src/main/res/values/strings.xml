@@ -123,6 +123,10 @@
     <string name="show_number_row">Show separate number row</string>
     <string name="space_swipe">Space swipe cursor move</string>
     <string name="delete_swipe">Delete swipe</string>
+    <!-- Option to show or hide the app's icon in the launcher -->
+    <string name="pref_show_app_icon">Show app icon</string>
+    <!-- Description for the app icon option, which also says how to reach these settings without it -->
+    <string name="pref_show_app_icon_summary">Show this app in the app drawer. When hidden, reach these settings by long-pressing the comma key.</string>
     <!-- Option to allow the extracted full screen text field that replaces the app in landscape -->
     <string name="fullscreen_landscape">Fullscreen keyboard in landscape</string>
     <!-- Description for the landscape fullscreen option -->

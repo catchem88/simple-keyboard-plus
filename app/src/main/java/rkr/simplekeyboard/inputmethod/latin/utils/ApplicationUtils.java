@@ -22,6 +22,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 
@@ -30,6 +31,54 @@ public final class ApplicationUtils {
 
     private ApplicationUtils() {
         // This utility class is not publicly instantiable.
+    }
+
+    /*
+        Name of the manifest activity-alias that carries the launcher entry. Disabling it removes the
+        app from the launcher without affecting SettingsActivity, which the system still launches.
+        Declared with a leading dot in the manifest, so it resolves against the namespace rather than
+        the application id.
+    */
+    private static final String LAUNCHER_ALIAS_CLASS_NAME =
+            "rkr.simplekeyboard.inputmethod.latin.settings.SettingsLauncherAlias";
+
+    /*
+        Show or hide the launcher icon, writing only when the state actually differs.
+
+        The enabled state belongs to the package manager, not to the app, so it survives restarts and
+        updates and resets on uninstall. Preferences are backed up but that state is not, so a restored
+        install can have the preference saying hidden while the icon is visible. Making this idempotent
+        lets it be called to reconcile the two without writing on every settings visit.
+
+        DONT_KILL_APP matters: without it the system kills this process, taking the running keyboard
+        down with it.
+    */
+    public static void setLauncherIconVisible(final Context context, final boolean visible) {
+        final ComponentName alias =
+                new ComponentName(context.getPackageName(),LAUNCHER_ALIAS_CLASS_NAME);
+        final PackageManager packageManager = context.getPackageManager();
+        try {
+            //DEFAULT means the manifest value applies, and the alias ships enabled
+            final int current = packageManager.getComponentEnabledSetting(alias);
+            final boolean currentlyVisible =
+                    current == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    || current == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+            if(currentlyVisible == visible) {
+                return;
+            }
+
+            final int state;
+            if(visible) {
+                state = PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+            }
+            else {
+                state = PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+            }
+            packageManager.setComponentEnabledSetting(alias,state,PackageManager.DONT_KILL_APP);
+        } catch (final IllegalArgumentException e) {
+            //The alias is missing, which can only happen if the manifest and this constant disagree
+            Log.e(TAG, "Could not change launcher icon visibility.", e);
+        }
     }
 
     public static int getActivityTitleResId(final Context context,

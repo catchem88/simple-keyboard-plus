@@ -62,6 +62,8 @@ bool, so editing the bool covers both.
 - **Leaner runtime** - the cached text before the cursor is capped instead of growing for the whole
   session, the background executor is shut down with the service, and the proximity grid is a quarter
   of upstream's size. See the performance section in `guide.md`.
+- **Hideable launcher icon** - Settings > Preferences > Show app icon, on by default. A keyboard does
+  not need a launcher entry once it is set up.
 
 ## Explicit non-goals
 

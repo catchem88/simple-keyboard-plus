@@ -196,6 +196,25 @@ clears preferences, so the new defaults take effect on first run.
 - **Capped at 2x the cache size, trimming to 1x**, so trimming is amortised rather than copying on every
   key press.
 
+- Added the hideable launcher icon (option B of two that were offered):
+  - Moved MAIN/LAUNCHER off `SettingsActivity` onto a new `activity-alias`
+    `.latin.settings.SettingsLauncherAlias`. `SettingsActivity` keeps `exported="true"` with no intent
+    filter because the system launches it by component name via `method.xml`, and a component the
+    system needs must never be the one being disabled.
+  - `ApplicationUtils.setLauncherIconVisible` toggles the alias with `DONT_KILL_APP`. It compares
+    against `getComponentEnabledSetting` first and returns early when already correct, treating
+    `COMPONENT_ENABLED_STATE_DEFAULT` as visible since the alias ships enabled.
+  - `pref_show_app_icon`, default true, in the Preferences screen. `PreferencesSettingsFragment`
+    applies it on change and also calls the same idempotent helper in `onCreate` to reconcile: prefs
+    are backed up but component state is not, so a restored install could otherwise have the
+    preference say hidden while the icon is visible, making the first toggle appear to do nothing.
+  - README updated in both the features list and Get Started.
+  - Verified in the release APK via `aapt2 dump xmltree`: the alias carries `targetActivity`,
+    `enabled=true`, `exported=true`, and an intent-filter with both `action.MAIN` and
+    `category.LAUNCHER`; `SettingsActivity` is present, exported, with no filter. Signature re-verified.
+  - **Not runtime tested.** aapt2 badging cannot confirm this (it ignores aliases), so whether the icon
+    actually appears and then disappears needs a device.
+
 ## Open questions / not done
 
 - The debug build has been tested on a device by the user and works well. The **release** build has not

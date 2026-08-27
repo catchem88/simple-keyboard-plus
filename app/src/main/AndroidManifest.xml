@@ -40,16 +40,30 @@
                 android:resource="@xml/method" />
         </service>
 
+        <!-- Kept exported with no intent filter because the system Settings app launches it
+             directly by component name through android:settingsActivity in xml/method.xml. The
+             launcher entry lives on the alias below instead. -->
         <activity
             android:name=".latin.settings.SettingsActivity"
             android:label="@string/english_ime_name"
             android:exported="true"
-            android:theme="@style/platformSettingsTheme">
+            android:theme="@style/platformSettingsTheme" />
+
+        <!-- The launcher entry is an alias so that it can be switched off at runtime with
+             PackageManager.setComponentEnabledSetting, which cannot be done to an activity that the
+             system also needs to launch. Enabled by default so a fresh install is still
+             discoverable; the "Show app icon" preference disables it. -->
+        <activity-alias
+            android:name=".latin.settings.SettingsLauncherAlias"
+            android:targetActivity=".latin.settings.SettingsActivity"
+            android:label="@string/english_ime_name"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <receiver
             android:name=".latin.SystemBroadcastReceiver"

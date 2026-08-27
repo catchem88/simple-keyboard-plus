@@ -24,6 +24,7 @@ import android.os.Bundle;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardLayoutSet;
+import rkr.simplekeyboard.inputmethod.latin.utils.ApplicationUtils;
 
 /**
  * "Preferences" settings sub screen.
@@ -47,6 +48,11 @@ public final class PreferencesSettingsFragment extends SubScreenFragment {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) {
             removePreference(Settings.PREF_USE_ON_SCREEN);
         }
+
+        //The launcher state is not covered by preference backup, so make sure it matches the stored
+        //preference. Does nothing when the two already agree.
+        ApplicationUtils.setLauncherIconVisible(getActivity(),
+                Settings.readShowAppIcon(getSharedPreferences()));
     }
 
     @Override
@@ -54,6 +60,10 @@ public final class PreferencesSettingsFragment extends SubScreenFragment {
         if (key.equals(Settings.PREF_SHOW_SPECIAL_CHARS) ||
                 key.equals(Settings.PREF_SHOW_NUMBER_ROW)) {
             KeyboardLayoutSet.onKeyboardThemeChanged();
+        }
+        else if(key.equals(Settings.PREF_SHOW_APP_ICON)) {
+            ApplicationUtils.setLauncherIconVisible(getActivity(),
+                    Settings.readShowAppIcon(prefs));
         }
     }
 }

@@ -66,6 +66,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_DELETE_SWIPE = "pref_delete_swipe";
     public static final String PREF_AUTO_TEXT = "pref_auto_text";
     public static final String PREF_FULLSCREEN_LANDSCAPE = "pref_fullscreen_landscape";
+    public static final String PREF_SHOW_APP_ICON = "pref_show_app_icon";
 
     private static final float UNDEFINED_PREFERENCE_VALUE_FLOAT = -1.0f;
     private static final int UNDEFINED_PREFERENCE_VALUE_INT = -1;
@@ -239,6 +240,14 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
 
     public static boolean readShowSpecialChars(final SharedPreferences prefs) {
         return prefs.getBoolean(PREF_SHOW_SPECIAL_CHARS, true);
+    }
+
+    /*
+        Whether the launcher entry is shown. Only read by the settings screen, since the real state
+        lives in the package manager.
+    */
+    public static boolean readShowAppIcon(final SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_SHOW_APP_ICON, true);
     }
 
     public static boolean readShowNumberRow(final SharedPreferences prefs) {
